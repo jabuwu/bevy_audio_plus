@@ -9,7 +9,7 @@ resolver = "2"
 [dependencies]
 bevy = "0.8.0"
 bevy_kira_audio = "0.11.0"
+rand = "0.8.5"
 
 [dev-dependencies]
 examples_common = { path = "crates/examples_common" }
-rand = "0.8.5"

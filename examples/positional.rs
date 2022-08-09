@@ -30,14 +30,14 @@ fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(box_sprite(Vec2::new(500., 300.), Color::BLUE))
         .insert(
-            AudioPlusSource::new(asset_server.load("sounds/music_1.ogg"))
+            AudioPlusSource::new(asset_server.load("sounds/music_1.ogg").into())
                 .with_positional()
                 .with_looping(),
         );
     commands
         .spawn_bundle(box_sprite(Vec2::new(-500., -300.), Color::BLUE))
         .insert(
-            AudioPlusSource::new(asset_server.load("sounds/music_2.ogg"))
+            AudioPlusSource::new(asset_server.load("sounds/music_2.ogg").into())
                 .with_positional()
                 .with_looping(),
         )

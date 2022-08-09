@@ -49,7 +49,7 @@ fn spawn(
         commands
             .spawn_bundle(box_sprite(Vec2::new(x, y), Color::BLUE))
             .insert(
-                AudioPlusSource::new(asset_server.load("sounds/pong.ogg"))
+                AudioPlusSource::new(asset_server.load("sounds/pong.ogg").into())
                     .with_positional()
                     .with_playing(),
             )

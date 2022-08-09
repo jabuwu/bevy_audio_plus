@@ -1,1 +1,6 @@
-pub use super::{listener::AudioPlusListener, source::AudioPlusSource, AudioPlusPlugin};
+pub use super::{
+    listener::AudioPlusListener,
+    sound::{AudioPlusSound, AudioPlusSoundGroup},
+    source::AudioPlusSource,
+    AudioPlusPlugin,
+};
