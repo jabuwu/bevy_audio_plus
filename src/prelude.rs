@@ -1,6 +1,4 @@
 pub use super::{
-    listener::AudioPlusListener,
-    sound::{AudioPlusSound, AudioPlusSoundGroup},
-    source::AudioPlusSource,
+    effect::AudioPlusSoundEffect, listener::AudioPlusListener, source::AudioPlusSource,
     AudioPlusPlugin,
 };

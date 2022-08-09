@@ -18,7 +18,8 @@ impl Plugin for AudioPlusPlugin {
 }
 
 pub mod channels;
+pub mod effect;
 pub mod listener;
 pub mod prelude;
-pub mod sound;
 pub mod source;
+pub mod voice;

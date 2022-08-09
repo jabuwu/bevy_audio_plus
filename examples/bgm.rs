@@ -18,7 +18,7 @@ fn main() {
 }
 
 fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn().insert(
-        AudioPlusSource::new(asset_server.load("sounds/music_1.ogg").into()).with_looping(),
-    );
+    commands
+        .spawn()
+        .insert(AudioPlusSource::new(asset_server.load("sounds/music_1.ogg").into()).as_looping());
 }

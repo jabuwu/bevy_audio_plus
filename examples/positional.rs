@@ -15,7 +15,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(AudioPlusPlugin)
         .add_plugin(PlayerPlugin)
-        .add_plugin(TimeToLivePlugin)
         .add_plugin(InstructionsPlugin("WASD to move".to_owned()))
         .add_startup_system(init)
         .run();
@@ -30,16 +29,19 @@ fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(box_sprite(Vec2::new(500., 300.), Color::BLUE))
         .insert(
-            AudioPlusSource::new(asset_server.load("sounds/music_1.ogg").into())
-                .with_positional()
-                .with_looping(),
+            AudioPlusSource::new(
+                AudioPlusSoundEffect::single(asset_server.load("sounds/music_1.ogg"))
+                    .with_positional(true),
+            )
+            .as_looping(),
         );
     commands
         .spawn_bundle(box_sprite(Vec2::new(-500., -300.), Color::BLUE))
         .insert(
-            AudioPlusSource::new(asset_server.load("sounds/music_2.ogg").into())
-                .with_positional()
-                .with_looping(),
-        )
-        .insert(TimeToLive(30.));
+            AudioPlusSource::new(
+                AudioPlusSoundEffect::single(asset_server.load("sounds/music_2.ogg"))
+                    .with_positional(true),
+            )
+            .as_looping(),
+        );
 }

@@ -50,12 +50,11 @@ fn spawn(
             .spawn_bundle(box_sprite(Vec2::new(x, y), Color::BLUE))
             .insert(
                 AudioPlusSource::new(
-                    AudioPlusSound::new(asset_server.load("sounds/pong.ogg"))
-                        .with_pitch_variation(0.2)
-                        .into(),
+                    AudioPlusSoundEffect::single(asset_server.load("sounds/pong.ogg"))
+                        .with_positional(true)
+                        .with_pitch(1., 0.2),
                 )
-                .with_positional()
-                .with_playing(),
+                .as_playing(),
             )
             .insert(TimeToLive(0.8));
         data.spawn_time -= time_to_spawn;

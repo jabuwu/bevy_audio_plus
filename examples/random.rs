@@ -25,11 +25,14 @@ fn main() {
 }
 
 fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let sounds = AudioPlusSoundGroup::new(vec![
-        AudioPlusSound::new(asset_server.load("sounds/rock.ogg")).with_pitch_variation(0.5),
-        AudioPlusSound::new(asset_server.load("sounds/paper.ogg")).with_pitch_variation(0.5),
-        AudioPlusSound::new(asset_server.load("sounds/scissors.ogg")).with_pitch_variation(0.5),
-    ]);
+    let sounds = AudioPlusSoundEffect::multiple(vec![
+        asset_server.load("sounds/rock.ogg"),
+        asset_server.load("sounds/paper.ogg"),
+        asset_server.load("sounds/scissors.ogg"),
+    ])
+    .with_voices(3)
+    .with_pitch(1., 0.2)
+    .with_volume(0.5, 0.5);
     commands.spawn_bundle(Camera2dBundle::default());
     commands.spawn().insert(AudioPlusSource::new(sounds));
 }

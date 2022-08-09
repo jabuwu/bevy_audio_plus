@@ -1,77 +1,73 @@
 use crate::{
-    channels::{ChannelSettings, ChannelState},
+    effect::AudioPlusSoundEffect,
     prelude::AudioPlusListener,
-    sound::AudioPlusSoundGroup,
+    voice::{AudioPlusVoice, AudioPlusVoiceState},
 };
 use bevy::prelude::*;
 
-#[derive(Component, Clone)]
+#[derive(Component)]
 pub struct AudioPlusSource {
-    pub(crate) sound_group: AudioPlusSoundGroup,
-    pub(crate) randomize: bool,
-    pub(crate) positional: bool,
-    pub(crate) volume: f32,
-    pub(crate) state: ChannelState,
-    pub(crate) state_counter: u32,
-    pub(crate) channel_settings: ChannelSettings,
+    pub(crate) sound_effect: AudioPlusSoundEffect,
+    pub(crate) voices: Vec<AudioPlusVoice>,
+    pub(crate) next_voice: usize,
 }
 
 impl AudioPlusSource {
-    pub fn new(sound_group: AudioPlusSoundGroup) -> Self {
+    pub fn new(sound_effect: AudioPlusSoundEffect) -> Self {
+        let mut voices = vec![];
+        for _ in 0..sound_effect.voices {
+            voices.push(AudioPlusVoice::new());
+        }
         Self {
-            sound_group,
-            randomize: false,
-            positional: false,
-            volume: 1.,
-            state: ChannelState::Stopped,
-            state_counter: 1,
-            channel_settings: ChannelSettings::default(),
+            sound_effect,
+            voices,
+            next_voice: 0,
         }
     }
 
-    pub fn with_positional(self) -> Self {
-        Self {
-            positional: true,
-            ..self
-        }
+    pub fn as_playing(mut self) -> Self {
+        self.play();
+        self
     }
 
-    pub fn with_playing(self) -> Self {
-        Self {
-            state: ChannelState::Playing,
-            randomize: true,
-            ..self
-        }
+    pub fn as_looping(mut self) -> Self {
+        self.play_looped();
+        self
     }
 
-    pub fn with_looping(self) -> Self {
-        Self {
-            state: ChannelState::Looping,
-            randomize: true,
-            ..self
+    fn prepare_voice(&mut self) -> Option<usize> {
+        if !self.voices.is_empty() && !self.sound_effect.audio_sources.is_empty() {
+            let id = self.next_voice;
+            self.next_voice = (self.next_voice + 1) % self.voices.len();
+            let voice = &mut self.voices[id];
+            let audio_source = &self.sound_effect.audio_sources
+                [rand::random::<usize>() % self.sound_effect.audio_sources.len()];
+            voice.reset();
+            voice.audio_source = Some(audio_source.clone());
+            voice.state_dirty = true;
+            voice.volume = (self.sound_effect.volume - self.sound_effect.volume_variation * 0.5
+                + rand::random::<f32>() * self.sound_effect.volume_variation)
+                .clamp(0., 1.);
+            voice.playback_rate = (self.sound_effect.pitch
+                - self.sound_effect.pitch_variation * 0.5
+                + rand::random::<f32>() * self.sound_effect.pitch_variation)
+                .max(0.);
+            Some(id)
+        } else {
+            None
         }
     }
 
     pub fn play(&mut self) {
-        self.randomize = true;
-        self.state = ChannelState::Playing;
-        self.state_counter += 1;
+        if let Some(index) = self.prepare_voice() {
+            self.voices[index].state = AudioPlusVoiceState::Playing;
+        }
     }
 
     pub fn play_looped(&mut self) {
-        self.randomize = true;
-        self.state = ChannelState::Looping;
-        self.state_counter += 1;
-    }
-
-    pub fn stop(&mut self) {
-        self.randomize = true;
-        self.state = ChannelState::Stopped;
-        self.state_counter += 1;
-    }
-
-    pub fn set_volume(&mut self, volume: f32) {
-        self.volume = volume;
+        if let Some(index) = self.prepare_voice() {
+            self.voices[index].state = AudioPlusVoiceState::Looping;
+        }
     }
 }
 
@@ -86,33 +82,21 @@ pub(crate) fn update_audio_sources(
     } else {
         None
     };
+    let dist = 1000.;
     for (mut source, transform) in queries.p0().iter_mut() {
-        if source.randomize {
-            if source.sound_group.sounds.len() > 0 {
-                let sound = source.sound_group.sounds
-                    [rand::random::<usize>() % source.sound_group.sounds.len()]
-                .clone();
-                source.channel_settings.audio_source = Some(sound.resource.clone());
-                source.channel_settings.playback_rate = 1.0 - sound.pitch_variation * 0.5
-                    + rand::random::<f32>() * sound.pitch_variation;
-            }
-            source.randomize = false;
-        }
-        let dist = 1000.;
-        source.channel_settings.should_assign = true;
-        source.channel_settings.volume = source.volume;
-        source.channel_settings.state = source.state;
-        source.channel_settings.state_counter = source.state_counter;
-        if source.positional && transform.is_some() && listener_transform.is_some() {
+        let mut volume = 1.;
+        let mut panning = 0.5;
+        if source.sound_effect.positional && transform.is_some() && listener_transform.is_some() {
             let relative_position = transform.unwrap().translation.truncate()
                 - listener_transform.unwrap().translation.truncate();
             let distance = relative_position.length();
-            let distance_volume = ((dist - distance) / dist).clamp(0., 1.);
-            let distance_panning = (0.5 + relative_position.x / dist).clamp(0.2, 0.8);
-            source.channel_settings.volume *= distance_volume;
-            source.channel_settings.panning = distance_panning;
-        } else {
-            source.channel_settings.panning = 0.5;
+            volume *= ((dist - distance) / dist).clamp(0., 1.);
+            panning = (0.5 + relative_position.x / dist).clamp(0.2, 0.8);
+        }
+        for voice in source.voices.iter_mut() {
+            voice.should_assign = voice.state != AudioPlusVoiceState::Stopped;
+            voice.volume_multiplier = volume;
+            voice.panning = panning;
         }
     }
 }
