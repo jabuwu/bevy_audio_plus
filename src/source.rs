@@ -24,7 +24,7 @@ impl AudioPlusSource {
             positional: false,
             volume: 1.,
             state: ChannelState::Stopped,
-            state_counter: 0,
+            state_counter: 1,
             channel_settings: ChannelSettings::default(),
         }
     }

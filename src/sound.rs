@@ -44,3 +44,9 @@ impl From<Handle<bevy_kira_audio::AudioSource>> for AudioPlusSoundGroup {
         AudioPlusSoundGroup::new(vec![AudioPlusSound::new(resource)])
     }
 }
+
+impl From<AudioPlusSound> for AudioPlusSoundGroup {
+    fn from(sound: AudioPlusSound) -> Self {
+        AudioPlusSoundGroup::new(vec![sound])
+    }
+}
