@@ -74,8 +74,12 @@ impl AudioPlusSource {
     pub fn stop(&mut self) {
         for voice in self.voices.iter_mut() {
             if voice.state != AudioPlusVoiceState::Stopped {
-                voice.reset();
-                voice.state_dirty = true;
+                if voice.status.playing {
+                    voice.stopping = true;
+                } else {
+                    voice.reset();
+                    voice.state_dirty = true;
+                }
             }
         }
     }
@@ -86,6 +90,7 @@ pub(crate) fn update_audio_sources(
         Query<(&mut AudioPlusSource, Option<&Transform>)>,
         Query<&Transform, With<AudioPlusListener>>,
     )>,
+    time: Res<Time>,
 ) {
     let listener_transform = if let Ok(transform) = queries.p1().get_single() {
         Some(*transform)
@@ -103,14 +108,37 @@ pub(crate) fn update_audio_sources(
                 .clamp(0., 1.);
             panning = (0.5 + relative_position.x / source.sound_effect.distance).clamp(0.2, 0.8);
         }
-        for voice in source.voices.iter_mut() {
+        let AudioPlusSource {
+            voices,
+            sound_effect,
+            ..
+        } = source.as_mut();
+        for voice in voices.iter_mut() {
             if voice.status.initialized && !voice.status.playing {
                 voice.reset();
                 voice.state_dirty = true;
             } else {
-                voice.should_assign = voice.state != AudioPlusVoiceState::Stopped;
-                voice.volume_multiplier = volume;
-                voice.panning = panning;
+                if !voice.stopping {
+                    if sound_effect.fade_in > 0. {
+                        voice.volume_fade += time.delta_seconds() / sound_effect.fade_in;
+                    } else {
+                        voice.volume_fade = 1.;
+                    }
+                } else {
+                    if sound_effect.fade_out > 0. {
+                        voice.volume_fade -= time.delta_seconds() / sound_effect.fade_out;
+                    } else {
+                        voice.volume_fade = 0.;
+                    }
+                }
+                voice.volume_fade = voice.volume_fade.clamp(0., 1.);
+                if voice.volume_fade == 0. {
+                    voice.reset()
+                } else {
+                    voice.should_assign = voice.state != AudioPlusVoiceState::Stopped;
+                    voice.volume_multiplier = volume;
+                    voice.panning = panning;
+                }
             }
         }
     }

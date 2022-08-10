@@ -44,18 +44,20 @@ fn update_kira_channel<T: Resource>(
                 if voice.should_assign {
                     unassign = false;
                     if voice.state_dirty {
-                        data.instance_handle = None;
                         match voice.state {
                             AudioPlusVoiceState::Stopped => {
+                                data.instance_handle = None;
                                 channel.stop();
                             }
                             AudioPlusVoiceState::Playing => {
+                                data.instance_handle = None;
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
                                     data.instance_handle = Some(channel.play(audio_source.clone()));
                                 }
                             }
                             AudioPlusVoiceState::Looping => {
+                                data.instance_handle = None;
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
                                     data.instance_handle =
@@ -65,7 +67,7 @@ fn update_kira_channel<T: Resource>(
                         }
                         voice.state_dirty = false;
                     }
-                    channel.set_volume(voice.volume * voice.volume_multiplier);
+                    channel.set_volume(voice.volume * voice.volume_multiplier * voice.volume_fade);
                     channel.set_panning(voice.panning);
                     channel.set_playback_rate(voice.playback_rate);
                     if let Some(instance_handle) = &data.instance_handle {

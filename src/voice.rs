@@ -12,10 +12,12 @@ pub(crate) struct AudioPlusVoice {
     pub(crate) audio_source: Option<Handle<bevy_kira_audio::AudioSource>>,
     pub(crate) volume: f32,
     pub(crate) volume_multiplier: f32,
+    pub(crate) volume_fade: f32,
     pub(crate) panning: f32,
     pub(crate) playback_rate: f32,
     pub(crate) state: AudioPlusVoiceState,
     pub(crate) state_dirty: bool,
+    pub(crate) stopping: bool,
     pub(crate) status: AudioPlusVoiceStatus,
 }
 
@@ -33,10 +35,12 @@ impl AudioPlusVoice {
             audio_source: None,
             volume: 0.,
             volume_multiplier: 1.,
+            volume_fade: 0.,
             panning: 0.5,
             playback_rate: 1.,
             state: AudioPlusVoiceState::Stopped,
             state_dirty: false,
+            stopping: false,
             status: AudioPlusVoiceStatus::default(),
         }
     }
@@ -47,9 +51,11 @@ impl AudioPlusVoice {
         self.audio_source = None;
         self.volume = 0.;
         self.volume_multiplier = 1.;
+        self.volume_fade = 0.;
         self.panning = 0.5;
         self.playback_rate = 1.;
         self.state = AudioPlusVoiceState::Stopped;
+        self.stopping = false;
         self.status = AudioPlusVoiceStatus::default();
     }
 }
