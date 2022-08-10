@@ -91,7 +91,6 @@ pub(crate) fn update_audio_sources(
     } else {
         None
     };
-    let dist = 1000.;
     for (mut source, transform) in queries.p0().iter_mut() {
         let mut volume = 1.;
         let mut panning = 0.5;
@@ -99,8 +98,9 @@ pub(crate) fn update_audio_sources(
             let relative_position = transform.unwrap().translation.truncate()
                 - listener_transform.unwrap().translation.truncate();
             let distance = relative_position.length();
-            volume *= ((dist - distance) / dist).clamp(0., 1.);
-            panning = (0.5 + relative_position.x / dist).clamp(0.2, 0.8);
+            volume *= ((source.sound_effect.distance - distance) / source.sound_effect.distance)
+                .clamp(0., 1.);
+            panning = (0.5 + relative_position.x / source.sound_effect.distance).clamp(0.2, 0.8);
         }
         for voice in source.voices.iter_mut() {
             if voice.status.initialized && !voice.status.playing {

@@ -68,16 +68,15 @@ fn update_kira_channel<T: Resource>(
                     channel.set_volume(voice.volume * voice.volume_multiplier);
                     channel.set_panning(voice.panning);
                     channel.set_playback_rate(voice.playback_rate);
-                    if voice.status.initialized {
-                        voice.status.playing = false;
-                        if let Some(instance_handle) = &data.instance_handle {
-                            if channel.state(instance_handle.clone()).position().is_some() {
-                                voice.status.playing = true;
-                            }
+                    if let Some(instance_handle) = &data.instance_handle {
+                        let has_position =
+                            channel.state(instance_handle.clone()).position().is_some();
+                        if voice.status.initialized {
+                            voice.status.playing = has_position;
+                        } else {
+                            voice.status.initialized = has_position;
+                            voice.status.playing = true;
                         }
-                    } else {
-                        voice.status.initialized = true;
-                        voice.status.playing = true;
                     }
                 }
             }
