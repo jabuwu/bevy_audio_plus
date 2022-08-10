@@ -16,6 +16,13 @@ pub(crate) struct AudioPlusVoice {
     pub(crate) playback_rate: f32,
     pub(crate) state: AudioPlusVoiceState,
     pub(crate) state_dirty: bool,
+    pub(crate) status: AudioPlusVoiceStatus,
+}
+
+#[derive(Default)]
+pub(crate) struct AudioPlusVoiceStatus {
+    pub(crate) initialized: bool,
+    pub(crate) playing: bool,
 }
 
 impl AudioPlusVoice {
@@ -30,17 +37,20 @@ impl AudioPlusVoice {
             playback_rate: 1.,
             state: AudioPlusVoiceState::Stopped,
             state_dirty: false,
+            status: AudioPlusVoiceStatus::default(),
         }
     }
 
     pub(crate) fn reset(&mut self) {
         self.should_assign = false;
+        self.assigned = false;
         self.audio_source = None;
         self.volume = 0.;
         self.volume_multiplier = 1.;
         self.panning = 0.5;
         self.playback_rate = 1.;
         self.state = AudioPlusVoiceState::Stopped;
+        self.status = AudioPlusVoiceStatus::default();
     }
 }
 

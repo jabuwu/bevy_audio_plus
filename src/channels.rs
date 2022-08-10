@@ -5,7 +5,7 @@ use crate::{
 };
 use bevy::ecs::system::Resource;
 use bevy::prelude::*;
-use bevy_kira_audio::{AudioApp, AudioChannel};
+use bevy_kira_audio::{AudioApp, AudioChannel, InstanceHandle};
 
 macro_rules! channels {
     ( $( $x:ident ),* ) => {
@@ -25,6 +25,7 @@ macro_rules! channels {
 struct ChannelData {
     initialized: bool,
     voice_handle: Option<AudioPlusVoiceHandle>,
+    instance_handle: Option<InstanceHandle>,
 }
 
 fn update_kira_channel<T: Resource>(
@@ -43,6 +44,7 @@ fn update_kira_channel<T: Resource>(
                 if voice.should_assign {
                     unassign = false;
                     if voice.state_dirty {
+                        data.instance_handle = None;
                         match voice.state {
                             AudioPlusVoiceState::Stopped => {
                                 channel.stop();
@@ -50,13 +52,14 @@ fn update_kira_channel<T: Resource>(
                             AudioPlusVoiceState::Playing => {
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
-                                    channel.play(audio_source.clone());
+                                    data.instance_handle = Some(channel.play(audio_source.clone()));
                                 }
                             }
                             AudioPlusVoiceState::Looping => {
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
-                                    channel.play_looped(audio_source.clone());
+                                    data.instance_handle =
+                                        Some(channel.play_looped(audio_source.clone()));
                                 }
                             }
                         }
@@ -65,6 +68,17 @@ fn update_kira_channel<T: Resource>(
                     channel.set_volume(voice.volume * voice.volume_multiplier);
                     channel.set_panning(voice.panning);
                     channel.set_playback_rate(voice.playback_rate);
+                    if voice.status.initialized {
+                        voice.status.playing = false;
+                        if let Some(instance_handle) = &data.instance_handle {
+                            if channel.state(instance_handle.clone()).position().is_some() {
+                                voice.status.playing = true;
+                            }
+                        }
+                    } else {
+                        voice.status.initialized = true;
+                        voice.status.playing = true;
+                    }
                 }
             }
         }
@@ -72,6 +86,7 @@ fn update_kira_channel<T: Resource>(
             channel.stop();
             channel.set_volume(0.);
             data.voice_handle = None;
+            data.instance_handle = None;
         }
     } else {
         let mut found = false;

@@ -69,6 +69,15 @@ impl AudioPlusSource {
             self.voices[index].state = AudioPlusVoiceState::Looping;
         }
     }
+
+    pub fn stop(&mut self) {
+        for voice in self.voices.iter_mut() {
+            if voice.state != AudioPlusVoiceState::Stopped {
+                voice.reset();
+                voice.state_dirty = true;
+            }
+        }
+    }
 }
 
 pub(crate) fn update_audio_sources(
@@ -94,9 +103,14 @@ pub(crate) fn update_audio_sources(
             panning = (0.5 + relative_position.x / dist).clamp(0.2, 0.8);
         }
         for voice in source.voices.iter_mut() {
-            voice.should_assign = voice.state != AudioPlusVoiceState::Stopped;
-            voice.volume_multiplier = volume;
-            voice.panning = panning;
+            if voice.status.initialized && !voice.status.playing {
+                voice.reset();
+                voice.state_dirty = true;
+            } else {
+                voice.should_assign = voice.state != AudioPlusVoiceState::Stopped;
+                voice.volume_multiplier = volume;
+                voice.panning = panning;
+            }
         }
     }
 }
