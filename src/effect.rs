@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::mixer::AudioPlusMixerChannel;
+
 #[derive(Clone)]
 pub struct AudioPlusSoundEffect {
     pub(crate) audio_sources: Vec<Handle<bevy_kira_audio::AudioSource>>,
@@ -13,6 +15,7 @@ pub struct AudioPlusSoundEffect {
     pub(crate) chance: f32,
     pub(crate) fade_in: f32,
     pub(crate) fade_out: f32,
+    pub(crate) channel: AudioPlusMixerChannel,
 }
 
 impl Default for AudioPlusSoundEffect {
@@ -29,6 +32,7 @@ impl Default for AudioPlusSoundEffect {
             chance: 1.,
             fade_in: 0.,
             fade_out: 0.,
+            channel: AudioPlusMixerChannel::None,
         }
     }
 }
@@ -83,6 +87,10 @@ impl AudioPlusSoundEffect {
             fade_out,
             ..self
         }
+    }
+
+    pub fn with_channel(self, channel: AudioPlusMixerChannel) -> Self {
+        Self { channel, ..self }
     }
 }
 

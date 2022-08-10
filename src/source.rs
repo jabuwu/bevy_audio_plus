@@ -1,6 +1,7 @@
 use crate::{
     effect::AudioPlusSoundEffect,
-    prelude::AudioPlusListener,
+    listener::AudioPlusListener,
+    mixer::{AudioPlusMixer, AudioPlusMixerChannel},
     voice::{AudioPlusVoice, AudioPlusVoiceState},
 };
 use bevy::prelude::*;
@@ -91,6 +92,7 @@ pub(crate) fn update_audio_sources(
         Query<&Transform, With<AudioPlusListener>>,
     )>,
     time: Res<Time>,
+    mixer: Res<AudioPlusMixer>,
 ) {
     let listener_transform = if let Ok(transform) = queries.p1().get_single() {
         Some(*transform)
@@ -107,6 +109,9 @@ pub(crate) fn update_audio_sources(
             volume *= ((source.sound_effect.distance - distance) / source.sound_effect.distance)
                 .clamp(0., 1.);
             panning = (0.5 + relative_position.x / source.sound_effect.distance).clamp(0.2, 0.8);
+        }
+        if source.sound_effect.channel != AudioPlusMixerChannel::None {
+            volume *= mixer.get_volume(source.sound_effect.channel);
         }
         let AudioPlusSource {
             voices,

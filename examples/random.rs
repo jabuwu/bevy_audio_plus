@@ -20,7 +20,7 @@ fn main() {
             "Press SPACE to play a random sound".to_owned(),
         ))
         .add_startup_system(init)
-        .add_system(sound_play)
+        .add_system(controls)
         .run();
 }
 
@@ -37,7 +37,7 @@ fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn().insert(AudioPlusSource::new(sounds));
 }
 
-fn sound_play(input: Res<Input<KeyCode>>, mut query: Query<&mut AudioPlusSource>) {
+fn controls(input: Res<Input<KeyCode>>, mut query: Query<&mut AudioPlusSource>) {
     if input.just_pressed(KeyCode::Space) {
         for mut source in query.iter_mut() {
             source.play();
