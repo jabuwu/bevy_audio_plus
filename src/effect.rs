@@ -10,6 +10,7 @@ pub struct AudioPlusSoundEffect {
     pub(crate) pitch: f32,
     pub(crate) pitch_variation: f32,
     pub(crate) distance: f32,
+    pub(crate) chance: f32,
 }
 
 impl Default for AudioPlusSoundEffect {
@@ -23,6 +24,7 @@ impl Default for AudioPlusSoundEffect {
             pitch: 1.,
             pitch_variation: 0.,
             distance: 1000.,
+            chance: 1.,
         }
     }
 }
@@ -65,6 +67,10 @@ impl AudioPlusSoundEffect {
 
     pub fn with_distance(self, distance: f32) -> Self {
         Self { distance, ..self }
+    }
+
+    pub fn with_chance(self, chance: f32) -> Self {
+        Self { chance, ..self }
     }
 }
 

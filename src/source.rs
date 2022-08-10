@@ -36,7 +36,8 @@ impl AudioPlusSource {
     }
 
     fn prepare_voice(&mut self) -> Option<usize> {
-        if !self.voices.is_empty() && !self.sound_effect.audio_sources.is_empty() {
+        let should_play = self.sound_effect.chance > rand::random::<f32>();
+        if !self.voices.is_empty() && !self.sound_effect.audio_sources.is_empty() && should_play {
             let id = self.next_voice;
             self.next_voice = (self.next_voice + 1) % self.voices.len();
             let voice = &mut self.voices[id];
