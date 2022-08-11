@@ -57,6 +57,6 @@ fn spawn(
                 .as_playing(),
             )
             .insert(TimeToLive(0.8));
-        data.spawn_time -= time_to_spawn;
+        data.spawn_time = 0.;
     }
 }

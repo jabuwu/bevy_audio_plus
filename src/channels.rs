@@ -21,11 +21,19 @@ macro_rules! channels {
     };
 }
 
+fn f32_sufficient_difference(from: f32, to: f32) -> bool {
+    return (from - to).abs() > 0.05 || (to == 0. && from != 0.);
+}
+
 #[derive(Default)]
 struct ChannelData {
     initialized: bool,
     voice_handle: Option<AudioPlusVoiceHandle>,
     instance_handle: Option<InstanceHandle>,
+
+    last_volume: f32,
+    last_panning: f32,
+    last_playback_rate: f32,
 }
 
 fn update_kira_channel<T: Resource>(
@@ -67,9 +75,20 @@ fn update_kira_channel<T: Resource>(
                         }
                         voice.state_dirty = false;
                     }
-                    channel.set_volume(voice.volume * voice.volume_multiplier * voice.volume_fade);
-                    channel.set_panning(voice.panning);
-                    channel.set_playback_rate(voice.playback_rate);
+                    let new_volume = voice.volume * voice.volume_multiplier * voice.volume_fade;
+                    if f32_sufficient_difference(new_volume, data.last_volume) {
+                        channel
+                            .set_volume(voice.volume * voice.volume_multiplier * voice.volume_fade);
+                        data.last_volume = new_volume;
+                    }
+                    if f32_sufficient_difference(voice.panning, data.last_panning) {
+                        channel.set_panning(voice.panning);
+                        data.last_panning = voice.panning;
+                    }
+                    if f32_sufficient_difference(voice.playback_rate, data.last_playback_rate) {
+                        channel.set_playback_rate(voice.playback_rate);
+                        data.last_playback_rate = voice.playback_rate;
+                    }
                     if let Some(instance_handle) = &data.instance_handle {
                         let has_position =
                             channel.state(instance_handle.clone()).position().is_some();
@@ -85,7 +104,10 @@ fn update_kira_channel<T: Resource>(
         }
         if unassign {
             channel.stop();
-            channel.set_volume(0.);
+            if f32_sufficient_difference(data.last_volume, 0.) {
+                channel.set_volume(0.);
+                data.last_volume = 0.;
+            }
             data.voice_handle = None;
             data.instance_handle = None;
         }
