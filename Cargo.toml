@@ -16,3 +16,5 @@ wasm-bindgen = "0.2.82"
 
 [dev-dependencies]
 examples_common = { path = "crates/examples_common" }
+bevy_egui = "0.15"
+

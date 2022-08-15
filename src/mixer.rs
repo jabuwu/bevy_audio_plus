@@ -1,5 +1,5 @@
 const CHANNEL_COUNT: usize = 2;
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum AudioPlusMixerChannel {
     None = 0,
     Music = 1,

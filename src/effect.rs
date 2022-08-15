@@ -53,8 +53,24 @@ impl AudioPlusSoundEffect {
         Self { voices, ..self }
     }
 
+    pub fn set_voices(&mut self, voices: usize) {
+        self.voices = voices;
+    }
+
+    pub fn voices(&self) -> usize {
+        self.voices
+    }
+
     pub fn with_positional(self, positional: bool) -> Self {
         Self { positional, ..self }
+    }
+
+    pub fn set_positional(&mut self, positional: bool) {
+        self.positional = positional;
+    }
+
+    pub fn positional(&self) -> bool {
+        self.positional
     }
 
     pub fn with_volume(self, volume: f32, volume_variation: f32) -> Self {
@@ -65,6 +81,22 @@ impl AudioPlusSoundEffect {
         }
     }
 
+    pub fn set_volume(&mut self, volume: f32) {
+        self.volume = volume;
+    }
+
+    pub fn set_volume_variation(&mut self, volume_variation: f32) {
+        self.volume_variation = volume_variation;
+    }
+
+    pub fn volume(&self) -> f32 {
+        self.volume
+    }
+
+    pub fn volume_variation(&self) -> f32 {
+        self.volume_variation
+    }
+
     pub fn with_pitch(self, pitch: f32, pitch_variation: f32) -> Self {
         Self {
             pitch,
@@ -73,12 +105,44 @@ impl AudioPlusSoundEffect {
         }
     }
 
+    pub fn set_pitch(&mut self, pitch: f32) {
+        self.pitch = pitch;
+    }
+
+    pub fn set_pitch_variation(&mut self, pitch_variation: f32) {
+        self.pitch_variation = pitch_variation;
+    }
+
+    pub fn pitch(&self) -> f32 {
+        self.pitch
+    }
+
+    pub fn pitch_variation(&self) -> f32 {
+        self.pitch_variation
+    }
+
     pub fn with_distance(self, distance: f32) -> Self {
         Self { distance, ..self }
     }
 
+    pub fn set_distance(&mut self, distance: f32) {
+        self.distance = distance;
+    }
+
+    pub fn distance(&self) -> f32 {
+        self.distance
+    }
+
     pub fn with_chance(self, chance: f32) -> Self {
         Self { chance, ..self }
+    }
+
+    pub fn set_chance(&mut self, chance: f32) {
+        self.chance = chance;
+    }
+
+    pub fn chance(&self) -> f32 {
+        self.chance
     }
 
     pub fn with_fade(self, fade_in: f32, fade_out: f32) -> Self {
@@ -89,8 +153,32 @@ impl AudioPlusSoundEffect {
         }
     }
 
+    pub fn set_fade_in(&mut self, fade_in: f32) {
+        self.fade_in = fade_in;
+    }
+
+    pub fn set_fade_out(&mut self, fade_out: f32) {
+        self.fade_out = fade_out;
+    }
+
+    pub fn fade_in(&self) -> f32 {
+        self.fade_in
+    }
+
+    pub fn fade_out(&self) -> f32 {
+        self.fade_out
+    }
+
     pub fn with_channel(self, channel: AudioPlusMixerChannel) -> Self {
         Self { channel, ..self }
+    }
+
+    pub fn set_channel(&mut self, channel: AudioPlusMixerChannel) {
+        self.channel = channel;
+    }
+
+    pub fn channel(&self) -> AudioPlusMixerChannel {
+        self.channel
     }
 }
 
