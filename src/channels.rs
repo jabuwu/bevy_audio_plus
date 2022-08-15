@@ -5,7 +5,7 @@ use crate::{
 };
 use bevy::ecs::system::Resource;
 use bevy::prelude::*;
-use bevy_kira_audio::{AudioApp, AudioChannel, InstanceHandle};
+use bevy_kira_audio::{AudioApp, AudioChannel, AudioControl, AudioInstance};
 
 macro_rules! channels {
     ( $( $x:ident ),* ) => {
@@ -29,8 +29,7 @@ fn f32_sufficient_difference(from: f32, to: f32) -> bool {
 struct ChannelData {
     initialized: bool,
     voice_handle: Option<AudioPlusVoiceHandle>,
-    instance_handle: Option<InstanceHandle>,
-
+    instance_handle: Option<Handle<AudioInstance>>,
     last_volume: f32,
     last_panning: f32,
     last_playback_rate: f32,
@@ -61,7 +60,8 @@ fn update_kira_channel<T: Resource>(
                                 data.instance_handle = None;
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
-                                    data.instance_handle = Some(channel.play(audio_source.clone()));
+                                    data.instance_handle =
+                                        Some(channel.play(audio_source.clone()).handle());
                                 }
                             }
                             AudioPlusVoiceState::Looping => {
@@ -69,7 +69,7 @@ fn update_kira_channel<T: Resource>(
                                 channel.stop();
                                 if let Some(audio_source) = &voice.audio_source {
                                     data.instance_handle =
-                                        Some(channel.play_looped(audio_source.clone()));
+                                        Some(channel.play(audio_source.clone()).looped().handle());
                                 }
                             }
                         }
@@ -77,21 +77,21 @@ fn update_kira_channel<T: Resource>(
                     }
                     let new_volume = voice.volume * voice.volume_multiplier * voice.volume_fade;
                     if f32_sufficient_difference(new_volume, data.last_volume) {
-                        channel
-                            .set_volume(voice.volume * voice.volume_multiplier * voice.volume_fade);
+                        channel.set_volume(
+                            (voice.volume * voice.volume_multiplier * voice.volume_fade) as f64,
+                        );
                         data.last_volume = new_volume;
                     }
                     if f32_sufficient_difference(voice.panning, data.last_panning) {
-                        channel.set_panning(voice.panning);
+                        channel.set_panning(voice.panning as f64);
                         data.last_panning = voice.panning;
                     }
                     if f32_sufficient_difference(voice.playback_rate, data.last_playback_rate) {
-                        channel.set_playback_rate(voice.playback_rate);
+                        channel.set_playback_rate(voice.playback_rate as f64);
                         data.last_playback_rate = voice.playback_rate;
                     }
                     if let Some(instance_handle) = &data.instance_handle {
-                        let has_position =
-                            channel.state(instance_handle.clone()).position().is_some();
+                        let has_position = channel.state(&instance_handle).position().is_some();
                         if voice.status.initialized {
                             voice.status.playing = has_position;
                         } else {
