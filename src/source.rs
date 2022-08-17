@@ -32,7 +32,17 @@ impl AudioPlusSource {
         self
     }
 
+    fn create_voices(&mut self) {
+        if self.voices.len() != self.sound_effect.voices {
+            self.voices = vec![];
+            for _ in 0..self.sound_effect.voices {
+                self.voices.push(AudioPlusVoice::new());
+            }
+        }
+    }
+
     fn prepare_voice(&mut self) -> Option<usize> {
+        self.create_voices();
         let should_play = self.sound_effect.chance > rand::random::<f32>();
         if !self.voices.is_empty() && !self.sound_effect.audio_sources.is_empty() && should_play {
             self.next_voice = self.next_voice % self.voices.len();
@@ -105,12 +115,7 @@ pub(crate) fn update_audio_sources(
         None
     };
     for (mut source, transform) in queries.p0().iter_mut() {
-        if source.voices.len() != source.sound_effect.voices {
-            source.voices = vec![];
-            for _ in 0..source.sound_effect.voices {
-                source.voices.push(AudioPlusVoice::new());
-            }
-        }
+        source.create_voices();
         let mut volume = 1.;
         let mut panning = 0.5;
         if source.sound_effect.positional && transform.is_some() && listener_transform.is_some() {
