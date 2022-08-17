@@ -21,7 +21,7 @@ macro_rules! channels {
     };
 }
 
-fn f32_sufficient_difference(from: f32, to: f32) -> bool {
+fn f32_sufficient_difference(to: f32, from: f32) -> bool {
     return (from - to).abs() > 0.05 || (to == 0. && from != 0.);
 }
 
@@ -104,7 +104,7 @@ fn update_kira_channel<T: Resource>(
         }
         if unassign {
             channel.stop();
-            if f32_sufficient_difference(data.last_volume, 0.) {
+            if f32_sufficient_difference(0., data.last_volume) {
                 channel.set_volume(0.);
                 data.last_volume = 0.;
             }
