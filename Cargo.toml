@@ -1,5 +1,5 @@
 [package]
-name = "audio_plus"
+name = "bevy_audio_plus"
 version = "0.1.0"
 edition = "2021"
 
