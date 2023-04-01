@@ -1,18 +1,19 @@
 use audio_plus::prelude::*;
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use examples_common::prelude::*;
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Audio Plus - Random".to_string(),
-            width: 1280.,
-            height: 720.,
-            resizable: false,
-            ..default()
-        })
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Audio Plus - Random".to_string(),
+                resolution: WindowResolution::new(1280., 720.),
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugin(AudioPlusPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(TimeToLivePlugin)
@@ -33,8 +34,8 @@ fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
     .with_voices(3)
     .with_pitch(1., 0.2)
     .with_volume(0.5, 0.5);
-    commands.spawn_bundle(Camera2dBundle::default());
-    commands.spawn().insert(AudioPlusSource::new(sounds));
+    commands.spawn(Camera2dBundle::default());
+    commands.spawn(AudioPlusSource::new(sounds));
 }
 
 fn controls(input: Res<Input<KeyCode>>, mut query: Query<&mut AudioPlusSource>) {

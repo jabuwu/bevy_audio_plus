@@ -3,9 +3,10 @@ use bevy_kira_audio::AudioPlugin;
 use channels::add_audio_channels;
 use mixer::AudioPlusMixer;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemLabel)]
-pub enum AudioPlusSystems {
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+pub enum AudioPlusSystem {
     UpdateAudioSources,
+    Debug,
 }
 
 pub struct AudioPlusPlugin;
@@ -14,7 +15,7 @@ impl Plugin for AudioPlusPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(AudioPlugin)
             .init_resource::<AudioPlusMixer>()
-            .add_system(source::update_audio_sources.label(AudioPlusSystems::UpdateAudioSources));
+            .add_system(source::update_audio_sources.in_set(AudioPlusSystem::UpdateAudioSources));
         add_audio_channels(app);
     }
 }

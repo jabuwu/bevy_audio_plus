@@ -1,7 +1,7 @@
 use crate::{
     source::AudioPlusSource,
     voice::{AudioPlusVoiceHandle, AudioPlusVoiceState},
-    AudioPlusSystems,
+    AudioPlusSystem,
 };
 use bevy::ecs::system::Resource;
 use bevy::prelude::*;
@@ -10,19 +10,20 @@ use bevy_kira_audio::{AudioApp, AudioChannel, AudioControl, AudioInstance};
 macro_rules! channels {
     ( $( $x:ident ),* ) => {
         $(
+            #[derive(Resource)]
             pub struct $x;
         )*
         pub fn add_audio_channels(app: &mut App) {
             $(
                 app.add_audio_channel::<$x>();
-                app.add_system(update_kira_channel::<$x>.after(AudioPlusSystems::UpdateAudioSources));
+                app.add_system(update_kira_channel::<$x>.after(AudioPlusSystem::UpdateAudioSources).before(AudioPlusSystem::Debug));
             )*
         }
     };
 }
 
 fn f32_sufficient_difference(to: f32, from: f32) -> bool {
-    return (from - to).abs() > 0.05 || (to == 0. && from != 0.);
+    return (from - to).abs() > 0.01 || (to == 0. && from != 0.);
 }
 
 #[derive(Default)]
@@ -39,6 +40,7 @@ fn update_kira_channel<T: Resource>(
     mut data: Local<ChannelData>,
     channel: Res<AudioChannel<T>>,
     mut query: Query<(Entity, &mut AudioPlusSource)>,
+    audio_sources: Res<Assets<bevy_kira_audio::AudioSource>>,
 ) {
     if !data.initialized {
         channel.set_volume(0.);
@@ -50,6 +52,7 @@ fn update_kira_channel<T: Resource>(
             if let Some(voice) = source.voices.get_mut(voice_handle.index) {
                 if voice.should_assign {
                     unassign = false;
+                    let mut just_started = false;
                     if voice.state_dirty {
                         match voice.state {
                             AudioPlusVoiceState::Stopped => {
@@ -59,17 +62,46 @@ fn update_kira_channel<T: Resource>(
                             AudioPlusVoiceState::Playing => {
                                 data.instance_handle = None;
                                 channel.stop();
-                                if let Some(audio_source) = &voice.audio_source {
-                                    data.instance_handle =
-                                        Some(channel.play(audio_source.clone()).handle());
+                                if let Some(audio_source_handle) = &voice.audio_source {
+                                    if let Some(audio_source) =
+                                        audio_sources.get(audio_source_handle)
+                                    {
+                                        if voice.position
+                                            < audio_source.sound.duration().as_secs_f64()
+                                        {
+                                            just_started = true;
+                                            data.instance_handle = Some(
+                                                channel
+                                                    .play(audio_source_handle.clone())
+                                                    .start_from(voice.position)
+                                                    .handle(),
+                                            );
+                                        }
+                                    }
                                 }
                             }
                             AudioPlusVoiceState::Looping => {
                                 data.instance_handle = None;
                                 channel.stop();
-                                if let Some(audio_source) = &voice.audio_source {
-                                    data.instance_handle =
-                                        Some(channel.play(audio_source.clone()).looped().handle());
+                                if let Some(audio_source_handle) = &voice.audio_source {
+                                    if let Some(audio_source) =
+                                        audio_sources.get(audio_source_handle)
+                                    {
+                                        just_started = true;
+                                        data.instance_handle = Some(
+                                            channel
+                                                .play(audio_source_handle.clone())
+                                                .start_from(
+                                                    voice.position
+                                                        % audio_source
+                                                            .sound
+                                                            .duration()
+                                                            .as_secs_f64(),
+                                                )
+                                                .looped()
+                                                .handle(),
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -91,7 +123,8 @@ fn update_kira_channel<T: Resource>(
                         data.last_playback_rate = voice.playback_rate;
                     }
                     if let Some(instance_handle) = &data.instance_handle {
-                        let has_position = channel.state(&instance_handle).position().is_some();
+                        let has_position =
+                            just_started || channel.state(&instance_handle).position().is_some();
                         if voice.status.initialized {
                             voice.status.playing = has_position;
                         } else {
@@ -115,11 +148,15 @@ fn update_kira_channel<T: Resource>(
         let mut found = false;
         for (entity, mut source) in query.iter_mut() {
             for (index, voice) in source.voices.iter_mut().enumerate() {
+                //dbg!(voice.should_assign, voice.assigned);
                 if voice.should_assign && !voice.assigned {
                     data.voice_handle = Some(AudioPlusVoiceHandle { entity, index });
                     voice.assigned = true;
+                    voice.state_dirty = true;
                     found = true;
                     break;
+                } else if !voice.should_assign {
+                    voice.assigned = false;
                 }
             }
             if found {
@@ -131,5 +168,16 @@ fn update_kira_channel<T: Resource>(
 
 channels!(
     Channel1, Channel2, Channel3, Channel4, Channel5, Channel6, Channel7, Channel8, Channel9,
-    Channel10
+    Channel10, Channel11, Channel12, Channel13, Channel14, Channel15, Channel16, Channel17,
+    Channel18, Channel19, Channel20, Channel21, Channel22, Channel23, Channel24, Channel25,
+    Channel26, Channel27, Channel28, Channel29, Channel30, Channel31, Channel32, Channel33,
+    Channel34, Channel35, Channel36, Channel37, Channel38, Channel39, Channel40, Channel41,
+    Channel42, Channel43, Channel44, Channel45, Channel46, Channel47, Channel48, Channel49,
+    Channel50, Channel51, Channel52, Channel53, Channel54, Channel55, Channel56, Channel57,
+    Channel58, Channel59, Channel60, Channel61, Channel62, Channel63, Channel64, Channel65,
+    Channel66, Channel67, Channel68, Channel69, Channel70, Channel71, Channel72, Channel73,
+    Channel74, Channel75, Channel76, Channel77, Channel78, Channel79, Channel80, Channel81,
+    Channel82, Channel83, Channel84, Channel85, Channel86, Channel87, Channel88, Channel89,
+    Channel90, Channel91, Channel92, Channel93, Channel94, Channel95, Channel96, Channel97,
+    Channel98, Channel99
 );

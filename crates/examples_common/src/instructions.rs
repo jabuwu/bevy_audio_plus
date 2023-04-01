@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+#[derive(Resource)]
 struct Instructions(String);
 
 pub struct InstructionsPlugin(pub String);
@@ -17,16 +18,15 @@ fn instructions_spawn(
     asset_server: Res<AssetServer>,
 ) {
     commands
-        .spawn_bundle(NodeBundle {
+        .spawn(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
                 ..Default::default()
             },
-            color: Color::NONE.into(),
             ..Default::default()
         })
         .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
+            parent.spawn(TextBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
                     position: UiRect {

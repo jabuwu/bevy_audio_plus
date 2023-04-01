@@ -1,18 +1,19 @@
 use audio_plus::prelude::*;
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use examples_common::prelude::*;
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Audio Plus - Fade".to_string(),
-            width: 1280.,
-            height: 720.,
-            resizable: false,
-            ..default()
-        })
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Audio Plus - Fade".to_string(),
+                resolution: WindowResolution::new(1280., 720.),
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugin(AudioPlusPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(TimeToLivePlugin)
@@ -25,8 +26,8 @@ fn main() {
 }
 
 fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
-    commands.spawn().insert(AudioPlusSource::new(
+    commands.spawn(Camera2dBundle::default());
+    commands.spawn(AudioPlusSource::new(
         AudioPlusSoundEffect::single(asset_server.load("sounds/music_1.ogg")).with_fade(3., 3.),
     ));
 }

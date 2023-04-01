@@ -1,21 +1,25 @@
 use audio_plus::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    window::{PrimaryWindow, WindowResolution},
+};
 use bevy_egui::{
     egui::{self, Pos2},
-    EguiContext, EguiPlugin,
+    EguiContexts, EguiPlugin,
 };
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Audio Plus - Demo".to_string(),
-            width: 640.,
-            height: 540.,
-            resizable: false,
-            ..default()
-        })
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Audio Plus - Demo".to_string(),
+                resolution: WindowResolution::new(640., 540.),
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugin(EguiPlugin)
         .add_plugin(AudioPlusPlugin)
         .add_startup_system(init)
@@ -27,32 +31,32 @@ fn main() {
 pub struct Label(pub String);
 
 fn init(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn_bundle(SpriteBundle::default())
-        .insert(AudioPlusListener);
-    commands
-        .spawn_bundle(SpriteBundle::default())
-        .insert(Label("Rock".into()))
-        .insert(AudioPlusSource::new(
+    commands.spawn((SpriteBundle::default(), AudioPlusListener));
+    commands.spawn((
+        SpriteBundle::default(),
+        Label("Rock".into()),
+        AudioPlusSource::new(
             AudioPlusSoundEffect::single(asset_server.load("sounds/rock.ogg"))
                 .with_channel(AudioPlusMixerChannel::Sfx),
-        ));
-    commands
-        .spawn_bundle(SpriteBundle::default())
-        .insert(Label("Music".into()))
-        .insert(AudioPlusSource::new(
+        ),
+    ));
+    commands.spawn((
+        SpriteBundle::default(),
+        Label("Music".into()),
+        AudioPlusSource::new(
             AudioPlusSoundEffect::single(asset_server.load("sounds/music_1.ogg"))
                 .with_channel(AudioPlusMixerChannel::Music),
-        ));
+        ),
+    ));
 }
 
 fn ui_example(
-    mut egui_context: ResMut<EguiContext>,
+    mut contexts: EguiContexts,
     mut query: Query<(&Label, &mut AudioPlusSource, &mut Transform)>,
     mut mixer: ResMut<AudioPlusMixer>,
-    windows: Res<Windows>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let (width, height) = if let Some(window) = windows.get_primary() {
+    let (width, height) = if let Ok(window) = window_query.get_single() {
         (window.width(), window.height())
     } else {
         (640., 480.)
@@ -66,7 +70,7 @@ fn ui_example(
         .vscroll(true)
         .fixed_pos(Pos2::new(padding, padding))
         .min_height(height - padding * 2.)
-        .show(egui_context.ctx_mut(), |ui| {
+        .show(contexts.ctx_mut(), |ui| {
             ui.set_width(width - padding * 2.);
 
             ui.horizontal(|ui| {

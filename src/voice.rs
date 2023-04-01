@@ -19,6 +19,7 @@ pub(crate) struct AudioPlusVoice {
     pub(crate) state_dirty: bool,
     pub(crate) stopping: bool,
     pub(crate) status: AudioPlusVoiceStatus,
+    pub(crate) position: f64,
 }
 
 #[derive(Default)]
@@ -42,6 +43,7 @@ impl AudioPlusVoice {
             state_dirty: false,
             stopping: false,
             status: AudioPlusVoiceStatus::default(),
+            position: 0.,
         }
     }
 
@@ -57,10 +59,11 @@ impl AudioPlusVoice {
         self.state = AudioPlusVoiceState::Stopped;
         self.stopping = false;
         self.status = AudioPlusVoiceStatus::default();
+        self.position = 0.;
     }
 }
 
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum AudioPlusVoiceState {
     #[default]
     Stopped,
