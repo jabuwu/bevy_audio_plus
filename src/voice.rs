@@ -20,6 +20,7 @@ pub(crate) struct AudioPlusVoice {
     pub(crate) stopping: bool,
     pub(crate) status: AudioPlusVoiceStatus,
     pub(crate) position: f64,
+    pub(crate) track_position: bool,
 }
 
 #[derive(Default)]
@@ -44,6 +45,7 @@ impl AudioPlusVoice {
             stopping: false,
             status: AudioPlusVoiceStatus::default(),
             position: 0.,
+            track_position: false,
         }
     }
 
@@ -60,6 +62,7 @@ impl AudioPlusVoice {
         self.stopping = false;
         self.status = AudioPlusVoiceStatus::default();
         self.position = 0.;
+        self.track_position = false;
     }
 }
 

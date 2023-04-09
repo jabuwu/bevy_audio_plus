@@ -163,7 +163,9 @@ pub(crate) fn update_audio_sources(
                     voice.volume_multiplier = volume;
                     voice.panning = panning;
                 }
-                voice.position += time.delta_seconds_f64();
+                if voice.track_position {
+                    voice.position += time.delta_seconds_f64();
+                }
             }
         }
     }

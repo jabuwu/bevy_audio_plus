@@ -53,6 +53,7 @@ fn update_kira_channel<T: Resource>(
                 if voice.should_assign {
                     unassign = false;
                     let mut just_started = false;
+                    let new_volume = voice.volume * voice.volume_multiplier * voice.volume_fade;
                     if voice.state_dirty {
                         match voice.state {
                             AudioPlusVoiceState::Stopped => {
@@ -74,6 +75,9 @@ fn update_kira_channel<T: Resource>(
                                                 channel
                                                     .play(audio_source_handle.clone())
                                                     .start_from(voice.position)
+                                                    .with_volume(new_volume as f64)
+                                                    .with_panning(voice.panning as f64)
+                                                    .with_playback_rate(voice.playback_rate as f64)
                                                     .handle(),
                                             );
                                         }
@@ -98,6 +102,9 @@ fn update_kira_channel<T: Resource>(
                                                             .duration()
                                                             .as_secs_f64(),
                                                 )
+                                                .with_volume(new_volume as f64)
+                                                .with_panning(voice.panning as f64)
+                                                .with_playback_rate(voice.playback_rate as f64)
                                                 .looped()
                                                 .handle(),
                                         );
@@ -107,7 +114,6 @@ fn update_kira_channel<T: Resource>(
                         }
                         voice.state_dirty = false;
                     }
-                    let new_volume = voice.volume * voice.volume_multiplier * voice.volume_fade;
                     if f32_sufficient_difference(new_volume, data.last_volume) {
                         channel.set_volume(
                             (voice.volume * voice.volume_multiplier * voice.volume_fade) as f64,
@@ -133,6 +139,7 @@ fn update_kira_channel<T: Resource>(
                         }
                     }
                 }
+                voice.track_position = true;
             }
         }
         if unassign {
