@@ -4,7 +4,7 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(player_move);
+        app.add_systems(Update, player_move);
     }
 }
 

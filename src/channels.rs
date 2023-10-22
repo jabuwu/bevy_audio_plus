@@ -16,7 +16,7 @@ macro_rules! channels {
         pub fn add_audio_channels(app: &mut App) {
             $(
                 app.add_audio_channel::<$x>();
-                app.add_system(update_kira_channel::<$x>.after(AudioPlusSystem::UpdateAudioSources).before(AudioPlusSystem::Debug));
+                app.add_systems(Update, update_kira_channel::<$x>.after(AudioPlusSystem::UpdateAudioSources).before(AudioPlusSystem::Debug));
             )*
         }
     };
@@ -59,6 +59,7 @@ fn update_kira_channel<T: Resource>(
                             AudioPlusVoiceState::Stopped => {
                                 data.instance_handle = None;
                                 channel.stop();
+                                voice.state_dirty = false;
                             }
                             AudioPlusVoiceState::Playing => {
                                 data.instance_handle = None;
@@ -81,6 +82,7 @@ fn update_kira_channel<T: Resource>(
                                                     .handle(),
                                             );
                                         }
+                                        voice.state_dirty = false;
                                     }
                                 }
                             }
@@ -108,11 +110,11 @@ fn update_kira_channel<T: Resource>(
                                                 .looped()
                                                 .handle(),
                                         );
+                                        voice.state_dirty = false;
                                     }
                                 }
                             }
                         }
-                        voice.state_dirty = false;
                     }
                     if f32_sufficient_difference(new_volume, data.last_volume) {
                         channel.set_volume(
@@ -155,7 +157,6 @@ fn update_kira_channel<T: Resource>(
         let mut found = false;
         for (entity, mut source) in query.iter_mut() {
             for (index, voice) in source.voices.iter_mut().enumerate() {
-                //dbg!(voice.should_assign, voice.assigned);
                 if voice.should_assign && !voice.assigned {
                     data.voice_handle = Some(AudioPlusVoiceHandle { entity, index });
                     voice.assigned = true;

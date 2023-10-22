@@ -1,8 +1,8 @@
-use audio_plus::prelude::*;
 use bevy::{
     prelude::*,
     window::{PrimaryWindow, WindowResolution},
 };
+use bevy_audio_plus::prelude::*;
 use bevy_egui::{
     egui::{self, Pos2},
     EguiContexts, EguiPlugin,
@@ -20,10 +20,9 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(EguiPlugin)
-        .add_plugin(AudioPlusPlugin)
-        .add_startup_system(init)
-        .add_system(ui_example)
+        .add_plugins((EguiPlugin, AudioPlusPlugin))
+        .add_systems(Startup, init)
+        .add_systems(Update, ui_example)
         .run();
 }
 

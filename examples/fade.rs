@@ -1,5 +1,5 @@
-use audio_plus::prelude::*;
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_audio_plus::prelude::*;
 use examples_common::prelude::*;
 
 fn main() {
@@ -14,14 +14,14 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(AudioPlusPlugin)
-        .add_plugin(PlayerPlugin)
-        .add_plugin(TimeToLivePlugin)
-        .add_plugin(InstructionsPlugin(
-            "Press SPACE to play sound\nPress S to stop sound".to_owned(),
+        .add_plugins((
+            AudioPlusPlugin,
+            PlayerPlugin,
+            TimeToLivePlugin,
+            InstructionsPlugin("Press SPACE to play sound\nPress S to stop sound".to_owned()),
         ))
-        .add_startup_system(init)
-        .add_system(controls)
+        .add_systems(Startup, init)
+        .add_systems(Update, controls)
         .run();
 }
 

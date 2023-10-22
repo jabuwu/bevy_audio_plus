@@ -1,5 +1,5 @@
-use audio_plus::prelude::*;
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_audio_plus::prelude::*;
 
 fn main() {
     App::new()
@@ -13,8 +13,8 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(AudioPlusPlugin)
-        .add_startup_system(init)
+        .add_plugins(AudioPlusPlugin)
+        .add_systems(Startup, init)
         .run();
 }
 

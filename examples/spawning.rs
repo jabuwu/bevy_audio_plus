@@ -1,5 +1,5 @@
-use audio_plus::prelude::*;
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_audio_plus::prelude::*;
 use examples_common::prelude::*;
 
 fn main() {
@@ -14,12 +14,14 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(AudioPlusPlugin)
-        .add_plugin(PlayerPlugin)
-        .add_plugin(TimeToLivePlugin)
-        .add_plugin(InstructionsPlugin("WASD to move".to_owned()))
-        .add_startup_system(init)
-        .add_system(spawn)
+        .add_plugins((
+            AudioPlusPlugin,
+            PlayerPlugin,
+            TimeToLivePlugin,
+            InstructionsPlugin("WASD to move".to_owned()),
+        ))
+        .add_systems(Startup, init)
+        .add_systems(Update, spawn)
         .run();
 }
 
@@ -39,15 +41,16 @@ struct SpawnData {
 
 fn spawn(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut data: Local<SpawnData>,
     time: Res<Time>,
+    asset_server: Res<AssetServer>,
 ) {
-    let time_to_spawn = 0.2;
+    let time_to_spawn = 1.;
     data.spawn_time += time.delta_seconds();
     if data.spawn_time >= time_to_spawn {
         let x = rand::random::<f32>() * 1000. - 500.;
         let y = rand::random::<f32>() * 600. - 300.;
+
         commands.spawn((
             box_sprite(Vec2::new(x, y), Color::BLUE),
             AudioPlusSource::new(
