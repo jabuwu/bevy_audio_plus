@@ -155,7 +155,7 @@ pub(crate) fn update_audio_sources(
                     }
                 }
                 voice.volume_fade = voice.volume_fade.clamp(0., 1.);
-                if voice.volume_fade == 0. {
+                if voice.volume_fade == 0. && voice.stopping {
                     voice.reset()
                 } else {
                     voice.should_assign =
