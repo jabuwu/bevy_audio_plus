@@ -3,6 +3,8 @@ use bevy_kira_audio::AudioPlugin;
 use channels::add_audio_channels;
 use mixer::AudioPlusMixer;
 
+pub use bevy_kira_audio;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 pub enum AudioPlusSystem {
     UpdateAudioSources,
